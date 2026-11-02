@@ -50,7 +50,7 @@ Python 3.12 pinned. The Anthropic key lives in the gitignored `.env` (see `.env.
 
 ## 4. History
 
-The repo went through three designs before the 2026-10-31 rework to the lean model; the earlier design documents
+The repo went through three designs before the rework to the lean model; the earlier design documents
 were deleted. The decisions and the disagreements with the AI tooling are summarised in `ai_tooling_notes.md`. `transcripts/` holds only output of the
 current code (`transcripts/README.md` says what each file is).
 

@@ -15,7 +15,7 @@ Rules (model/ground_truth.md section 12):
   an existing one on its link
   document                                     AUTO into documents with the alias-scan annotation; grounded LLM
                                                annotation (about_*, topics, summary) when a key is present. No
-                                               relationship extraction (decision 2026-11-01). The same title and
+                                               relationship extraction (by decision). The same title and
                                                text already stored under another path: SKIP (a re-sent note)
   unreadable file                              InputError naming file and line; the whole batch rolls back
   quality                                      data_quality before and after, flags opened and closed reported
@@ -323,8 +323,8 @@ def reresolve(cur: psycopg.Cursor, entries: Log, batch_date: date) -> None:
 def store_documents(cur: psycopg.Cursor, entries: Log, folder: Path, batch_date: date,
                     llm: bool) -> tuple[list[int], list[dict[str, Any]]]:
     """Documents under research/ and desk_notes/: AUTO with the alias-scan annotation; grounded LLM annotation
-    for any document not yet annotated by the LLM, when a key is present. No relationship extraction (decision
-    2026-11-01: the LLM finds entities only). Returns the document ids and the annotation reports."""
+    for any document not yet annotated by the LLM, when a key is present. No relationship extraction (by decision:
+    the LLM finds entities only). Returns the document ids and the annotation reports."""
     patterns = alias_patterns(cur)
     ids: list[int] = []
     reports: list[dict[str, Any]] = []
@@ -425,7 +425,7 @@ def report(conn: psycopg.Connection, batch: str, entries: Log, doc_ids: list[int
              "## AUTO applied", ""] + section("AUTO")
     lines += ["", "## Discarded, for a person to decide (not applied)", ""] + section("DISCARD")
     lines += ["", "## Annotation of the stored documents", "",
-              "Relationships stated in the documents are not extracted (decision 2026-11-01): the LLM identifies "
+              "Relationships stated in the documents are not extracted (by decision): the LLM identifies "
               "entities only. Confidences below are reported, not stored.", ""]
     for d in docs:
         about = ", ".join(d["about_issuers"] + d["about_instruments"] + d["about_curves"] + d["about_currencies"])

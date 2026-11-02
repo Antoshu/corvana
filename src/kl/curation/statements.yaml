@@ -4,7 +4,7 @@
 # visibility = the document's label. quote must be a verbatim passage of the document (whitespace-insensitive);
 # the loader refuses the row otherwise. doc_time picks the chat line for desk notes. as_of defaults to the
 # document date unless the text dates the fact. Deltas (updates/) are not here: they go through the LLM extractor.
-# 2026-11-01 rework: the 20 HAS_VIEW rows and the 2 EXPOSED_TO rows were removed (21 rows remain).
+# Rework: the 20 HAS_VIEW rows and the 2 EXPOSED_TO rows were removed (21 rows remain).
 
 # --- research/2023-10-02_bank-a_cortel-initiation.md (external) ---
 - {file: research/2023-10-02_bank-a_cortel-initiation.md, subject: [issuer, ISS-0001], predicate: OWNS, object: [issuer, ISS-0005],

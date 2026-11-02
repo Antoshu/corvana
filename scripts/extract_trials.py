@@ -8,7 +8,7 @@ prompt change: edit build_extraction_prompt in src/kl/extract.py, run this again
     uv run python scripts/extract_trials.py --document 4        # any document id; expected rows only known for 13
     uv run python scripts/extract_trials.py --show-prompt       # print the prompt sent, then exit
 
-Relationship extraction is an experiment (decision 2026-11-01): kl-update does not run it and no test asserts
+Relationship extraction is an experiment by decision: kl-update does not run it and no test asserts
 its rows. `uv run kl-annotate --document 13 --extract` stores what passes the auto-check, if you want it in the database.
 """
 from __future__ import annotations

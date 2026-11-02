@@ -41,7 +41,7 @@ Target: ISS-0001. Current rating BB- / Negative.
 - CORROBORATED: GUARANTEED_BY ISS-0004 -> ISS-0001 (4 sources); OWNS ISS-0001 -> ISS-0002 (3 sources).
 - Superseded (history, not conflict): TRADES_AS_PROXY_FOR ISS-0005 holds=false (2023) then true (2026).
 
-## Note on the trust rule (corrected 2026-10-31)
+## Note on the trust rule
 
 Every issuer incorporated in Corvana carries an INFERRED COUNTRY_OF_RISK = QC row, so CNOC, CPL, CDB and CorTel all
 have a reference-grade "country of risk" channel in addition to their specific ones. Only issuers outside Corvana

@@ -4,7 +4,7 @@
 # alias view unions the columns and the array; source here says where the name was seen and is not loaded.
 # Deliberately absent: "the state", "the government", "the sovereign", "the parent" (resolved in context by
 # extraction), the unnamed CorTel holding company, CPL's strategic investor, "the 2033", XS2812345672.
-# Removed on 2026-11-01 with the rework: the agency rows (no agency table) and the currency rows "dinar" /
+# Removed with the rework: the agency rows (no agency table) and the currency rows "dinar" /
 # "the dinar" (a currency is a code on instruments, curves and country, not a table, so it has no aliases column).
 issuer:
   ISS-0001:
