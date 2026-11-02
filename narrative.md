@@ -77,6 +77,10 @@ multiple sources of truth.
 Right now, everything that comes from a document is flagged PROPOSED, so the final answer takes the lower trust into account instead of relying 
 on it without telling the user.
 
+The third place an LLM runs is the agent itself. The Part 2 and Part 3 transcripts in `transcripts/` were produced by an
+LLM-driven agent (`kl-agent`, Claude Opus) calling the typed tools; entitlements are enforced in Postgres underneath the tools,
+not in the prompt. A scripted sequence of the same tool calls (`kl-demo`) exists as an offline fallback and was not used for the submission.
+
 ## 4. Measuring accuracy and usefulness
 
 **Check the quality of the system.** For that we need to test four things:
@@ -93,7 +97,7 @@ as written: `uv run kl-agent --user <user> --question "..."`.
 
 | # | question | expected answer | run |
 |---|---|---|---|
-| 1 | bob, as of 2026-10-27: "If the Republic of Corvana is downgraded, what in my book is exposed, how, and what does our research say about it?" | Exposed: CNOC Finance 2029 (guaranteed by CNOC, 100% state-owned), CDB 2027 (sovereign guarantee, corroborated by three documents), CPL 2031 (51% stake flagged stale, 34% research only), CorTel 2032 (20% stake and proxy, research only), the 5Y CDS (references the sovereign; sign undocumented). Meridian 2030 unconfirmed (desk view only, conflict with the GB default). XS2812345672 and XS2999887768 unresolved, never guessed. Research: Bank A 2024 and 2026, Bank B 2026-09-22, the CPL IPO note, the desk lines; never the macro note | `uv run pytest tests/test_questions.py -k bob_` |
+| 1 | bob, as of 2026-10-27: "If the Republic of Corvana is downgraded, what in my book is exposed, how, and what does our research say about it?" | Exposed: CNOC Finance 2029 (guaranteed by CNOC, 100% state-owned), CDB 2027 (sovereign guarantee, corroborated by three documents), CPL 2031 (51% stake flagged stale, 34% research only), CorTel 2032 (exposed as a Corvana-domiciled issuer; the 20% stake and the proxy are research and desk only), the 5Y CDS (references the sovereign; sign undocumented). Meridian 2030 unconfirmed (desk view only, conflict with the GB default). XS2812345672 and XS2999887768 unresolved, never guessed. Research: Bank A 2024 and 2026, Bank B 2026-09-22, the CPL IPO note, the desk lines; never the macro note | `uv run pytest tests/test_questions.py -k bob_` |
 | 2 | alice, as of 2026-10-27: same question | Exposed: CORVAN 6.5% 2030 and CVGB 10.5% 2033 (issued by the Republic; the CVGB link is inferred through "Corvana Ministry of Finance"), the CVD 5Y swap and the USD/CVD NDF (currency and curve). Valdoria 2031 research only (CDS correlation 0.7). Northbridge 2029 not exposed. Research: the macro note, Bank A 2024, Bank B; never the CPL IPO note or a desk line | `uv run pytest tests/test_questions.py -k alice_` |
 | 3 | "What was the state's stake in Corvana Power & Light on 2025-06-30, and what is it now?" | On 2025-06-30: 51% for every user (tracker, corroborated by Bank A 2024). Now: bob and carol get 51% flagged stale with 34% (credit-internal, 2026-02-24) beside it; alice gets 51% and "newer information on this link exists that you are not entitled to see", one row, no content | `uv run pytest tests/test_questions.py -k cpl_stake` |
 | 4 | alice: "What does our research say about Corvana Power & Light?" and bob: "What does our research say about the CVGB 2033 and the CVD curve?" | alice: Bank A 2024 (51% state-owned, modest pick-up) and nothing else; the CPL IPO note and its 34% never appear. bob: nothing; the macro note is the only research on the CVD curve and he is not entitled to it. Each user is told only what they may read, with no hint of the document itself | `uv run pytest tests/test_questions.py -k "documents or research_visible"` |
