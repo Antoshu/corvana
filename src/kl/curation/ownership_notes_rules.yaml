@@ -1,0 +1,14 @@
+# What a note in ownership.csv (OwnershipTracker, column `notes`) may imply about the owned entity and its owner.
+# Replaces substring matching ("guarantee" anywhere), which read "Sovereign guarantee withdrawn ..." as a guarantee.
+#
+# A phrase matches as whole words, case-insensitively, anywhere in the note. Each matching phrase gives one
+# statement: owned <predicate> owner, INFERRED, dated the row's as_of_date, quoting the note; one row per predicate.
+# A note that also contains any negation (whole words) gives no row for any phrase: the loader and the ingest
+# report it for a person instead. Nothing else in a note is interpreted.
+rules:
+  - {phrase: sovereign guarantee, predicate: GUARANTEED_BY, holds: true}
+  - {phrase: explicit guarantee, predicate: GUARANTEED_BY, holds: true}
+  - {phrase: guaranteed by, predicate: GUARANTEED_BY, holds: true}
+  - {phrase: financing vehicle, predicate: FINANCING_VEHICLE_OF, holds: true}
+negations: [withdrawn, withdraw, withdrawal, revoked, terminated, removed, cancelled, canceled, lapsed, expired,
+            ended, ceased, suspended, no longer, not, no, without, except, excluding]

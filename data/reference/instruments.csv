@@ -1,0 +1,15 @@
+instrument_id,isin,ticker,description,instrument_type,issuer_name,guarantor_name,currency,coupon,maturity,underlying_curve,source_system
+INS-1001,XS2812345671,CORVAN 6.5 03/15/30,Republic of Corvana 6.5% 2030,Sovereign Bond,Republic of Corvana,,USD,6.5,2030-03-15,,SecMaster
+INS-1002,XS2812345689,CORVAN 7.25 06/01/35,Republic of Corvana 7.25% 2035,Sovereign Bond,Rep. of Corvana,,USD,7.25,2035-06-01,,SecMaster
+INS-1003,QC000CV28023,CVGB 9 09/30/28,Corvana Government Bond 9% 2028,Sovereign Bond,Corvana Ministry of Finance,,CVD,9.0,2028-09-30,CVD-GOVT,SecMaster
+INS-1004,QC000CV33031,CVGB 10.5 01/31/33,Corvana Government Bond 10.5% 2033,Sovereign Bond,Corvana Ministry of Finance,,CVD,10.5,2033-01-31,CVD-GOVT,SecMaster
+INS-1005,XS2600112234,CNOC 5.875 11/04/29,CNOC Finance 5.875% 2029,Corporate Bond,CNOC Finance B.V.,Corvana National Oil Co,USD,5.875,2029-11-04,,SecMaster
+INS-1006,XS2500445569,CORPWR 6 05/20/31,Corvana Power & Light 6% 2031,Corporate Bond,Corvana Power and Light,,USD,6.0,2031-05-20,,SecMaster
+INS-1007,XS2400778895,CDBANK 4.75 02/12/27,Corvana Development Bank 4.75% 2027,Agency Bond,Corvana Development Bank,Republic of Corvana,USD,4.75,2027-02-12,,SecMaster
+INS-1008,XS2700334415,CORTEL 5.5 08/15/32,CorTel 5.5% 2032,Corporate Bond,Corvana Telecommunications,,USD,5.5,2032-08-15,,SecMaster
+INS-1009,XS2300665523,MERMIN 7 10/01/30,Meridian Mining 7% 2030,Corporate Bond,Meridian Mining plc,,USD,7.0,2030-10-01,,SecMaster
+INS-1010,XS2900123451,VALDOR 8 04/15/31,Republic of Valdoria 8% 2031,Sovereign Bond,Republic of Valdoria,,USD,8.0,2031-04-15,,SecMaster
+INS-1011,GB00NB123454,NBRTL 4.25 07/01/29,Northbridge Retail 4.25% 2029,Corporate Bond,Northbridge Retail Group plc,,GBP,4.25,2029-07-01,,SecMaster
+INS-2001,,CORVAN CDS USD SR 5Y,Corvana 5Y senior CDS,CDS,Republic of Corvana,,USD,1.0,2031-12-20,,SecMaster
+INS-2002,,USDCVD NDF 3M,USD/CVD 3M non-deliverable forward,FX Forward,,,CVD,,2027-01-27,,SecMaster
+INS-2003,,CVD IRS 5Y,CVD 5Y pay-fixed interest rate swap,Interest Rate Swap,,,CVD,,2031-10-27,CVD-OIS,SecMaster

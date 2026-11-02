@@ -1,0 +1,67 @@
+# Curated names: what the pack calls a thing that is not already a column of its row. Loaded into the entity
+# tables' aliases[] column (issuers, instruments, curves); the loader drops an entry that equals a name column of
+# the same row (legal_name, short_name, ticker, ISIN, curve_id), so the array holds only the extra names. The
+# alias view unions the columns and the array; source here says where the name was seen and is not loaded.
+# Deliberately absent: "the state", "the government", "the sovereign", "the parent" (resolved in context by
+# extraction), the unnamed CorTel holding company, CPL's strategic investor, "the 2033", XS2812345672.
+# Removed on 2026-11-01 with the rework: the agency rows (no agency table) and the currency rows "dinar" /
+# "the dinar" (a currency is a code on instruments, curves and country, not a table, so it has no aliases column).
+issuer:
+  ISS-0001:
+    - {alias: Corvana, source: issuers.short_name}
+    - {alias: Rep. of Corvana, source: instruments.issuer_name INS-1002}
+    - {alias: Republic of Corvana (MinFin), source: ownership.owner}
+    - {alias: Corvana Ministry of Finance, source: instruments.issuer_name INS-1003/1004}
+    - {alias: Ministry of Finance, source: research 2026-06-10}
+    - {alias: ROC, source: research 2026-08-21}
+    - {alias: CORVAN, source: ticker root}
+    - {alias: CVGB, source: ticker root}
+  ISS-0002:
+    - {alias: CNOC, source: issuers.short_name}
+    - {alias: Corvana National Oil Co, source: instruments.guarantor_name INS-1005}
+    - {alias: Corvana Oil, source: "research 2026-06-10, 2026-09-22"}
+  ISS-0003:
+    - {alias: CPL, source: issuers.short_name}
+    - {alias: Corvana Power & Light, source: research 2024-05-14}
+    - {alias: Corvana Power and Light, source: instruments.issuer_name INS-1006}
+    - {alias: CORPWR, source: ticker root}
+  ISS-0004:
+    - {alias: CDB, source: issuers.short_name}
+    - {alias: CDBANK, source: ticker root}
+  ISS-0005:
+    - {alias: CorTel, source: issuers.short_name}
+    - {alias: Corvana Telecommunications, source: instruments.issuer_name INS-1008}
+    - {alias: CORTEL, source: ticker root}
+  ISS-0006:
+    - {alias: FCB, source: issuers.short_name}
+    - {alias: First Corvana Bank, source: research 2026-09-22}
+  ISS-0007:
+    - {alias: CNOC Finance, source: issuers.short_name}
+    - {alias: CNOC Finance BV, source: updates instruments_delta INS-1012}
+  ISS-0008:
+    - {alias: Meridian, source: issuers.short_name}
+    - {alias: MERMIN, source: ticker root}
+  ISS-0009:
+    - {alias: Valdoria, source: issuers.short_name}
+    - {alias: VALDOR, source: ticker root}
+  ISS-0010:
+    - {alias: Northbridge, source: issuers.short_name}
+    - {alias: Northbridge Retail, source: research 2026-07-01}
+    - {alias: NBRTL, source: ticker root}
+instrument:
+  INS-1002:
+    - {alias: CORVAN 2035s, source: research 2024-05-14}
+  INS-1007:
+    - {alias: CDB 27s, source: desk note 2026-09-19}
+  INS-1010:
+    - {alias: Valdoria 2031s, source: research 2024-05-14}
+  INS-1011:
+    - {alias: NBRTL 2029s, source: research 2026-07-01}
+  INS-2002:
+    - {alias: 3M NDFs, source: research 2026-08-21}
+    - {alias: USD/CVD 3M NDF, source: research 2026-08-21}
+  INS-2003:
+    - {alias: CVD 5Y swaps, source: research 2026-08-21}
+curve:
+  CVD-GOVT:
+    - {alias: CVD govt curve, source: research 2026-08-21}

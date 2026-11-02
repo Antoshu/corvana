@@ -1,0 +1,2 @@
+instrument_id,isin,ticker,description,instrument_type,issuer_name,guarantor_name,currency,coupon,maturity,underlying_curve,source_system
+INS-1012,XS2999887768,CNOC 6.75 10/15/34,CNOC Finance 6.75% 2034,Corporate Bond,CNOC Finance BV,Corvana National Oil Company,USD,6.75,2034-10-15,,SecMaster

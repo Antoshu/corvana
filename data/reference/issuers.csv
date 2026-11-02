@@ -1,0 +1,11 @@
+issuer_id,legal_name,short_name,lei,country_of_incorporation,issuer_type,sector,source_system,last_updated
+ISS-0001,Republic of Corvana,Corvana,,QC,Sovereign,Government,SecMaster,2026-01-15
+ISS-0002,Corvana National Oil Company,CNOC,5493CORVOIL000000128,QC,Corporate,Energy,SecMaster,2025-07-02
+ISS-0003,Corvana Power & Light plc,CPL,5493CPLPWR0000000204,QC,Corporate,Utilities,SecMaster,2024-02-10
+ISS-0004,Corvana Development Bank,CDB,5493CDBDEV0000000322,QC,Agency,Financials,SecMaster,2025-11-20
+ISS-0005,Corvana Telecommunications SA,CorTel,5493CORTEL0000000418,QC,Corporate,Telecoms,SecMaster,2023-09-01
+ISS-0006,First Corvana Bank,FCB,5493FIRSTCB000000507,QC,Corporate,Financials,SecMaster,2025-03-14
+ISS-0007,CNOC Finance B.V.,CNOC Finance,7245CNOCFIN000000651,NL,Corporate,Energy,SecMaster,2025-07-02
+ISS-0008,Meridian Mining plc,Meridian,213800MERIDIAN000746,GB,Corporate,Materials,SecMaster,2026-04-30
+ISS-0009,Republic of Valdoria,Valdoria,,QV,Sovereign,Government,SecMaster,2026-01-15
+ISS-0010,Northbridge Retail Group plc,Northbridge,5493NBRETAIL00000804,GB,Corporate,Consumer,SecMaster,2026-02-01

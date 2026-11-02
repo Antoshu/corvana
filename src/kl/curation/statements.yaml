@@ -1,0 +1,78 @@
+# Relationship statements read by hand from the base-pack documents. A statement is a link between two things
+# that no file column holds; opinions, forecasts and recommendations are not statements (the documents row,
+# with its text, summary and topics, is what "research says"). Loaded with method=MANUAL, status=PROPOSED,
+# visibility = the document's label. quote must be a verbatim passage of the document (whitespace-insensitive);
+# the loader refuses the row otherwise. doc_time picks the chat line for desk notes. as_of defaults to the
+# document date unless the text dates the fact. Deltas (updates/) are not here: they go through the LLM extractor.
+# 2026-11-01 rework: the 20 HAS_VIEW rows and the 2 EXPOSED_TO rows were removed (21 rows remain).
+
+# --- research/2023-10-02_bank-a_cortel-initiation.md (external) ---
+- {file: research/2023-10-02_bank-a_cortel-initiation.md, subject: [issuer, ISS-0001], predicate: OWNS, object: [issuer, ISS-0005],
+   value_num: 35, value_text: "indirect, through a holding company",
+   quote: "Corvana Telecommunications (CorTel) is 35% owned by the state through a holding company."}
+- {file: research/2023-10-02_bank-a_cortel-initiation.md, subject: [issuer, ISS-0005], predicate: TRADES_AS_PROXY_FOR, object: [issuer, ISS-0001],
+   holds: false, value_text: standalone credit,
+   quote: "we view it as a standalone credit rated one notch above the sovereign"}
+
+# --- research/2024-05-14_bank-a_corvana-sovereign-outlook.md (external) ---
+- {file: research/2024-05-14_bank-a_corvana-sovereign-outlook.md, subject: [issuer, ISS-0001], predicate: OWNS, object: [issuer, ISS-0002],
+   value_num: 100, quote: "CNOC remains wholly state-owned"}
+- {file: research/2024-05-14_bank-a_corvana-sovereign-outlook.md, subject: [issuer, ISS-0002], predicate: TRADES_AS_PROXY_FOR, object: [issuer, ISS-0001],
+   value_text: USD bonds trade tightly with the sovereign curve,
+   quote: "we view its USD bonds as trading tightly with the sovereign curve"}
+- {file: research/2024-05-14_bank-a_corvana-sovereign-outlook.md, subject: [issuer, ISS-0001], predicate: OWNS, object: [issuer, ISS-0003],
+   value_num: 51, quote: "Corvana Power & Light (51% state-owned) offers modest pick-up."}
+- {file: research/2024-05-14_bank-a_corvana-sovereign-outlook.md, subject: [issuer, ISS-0004], predicate: GUARANTEED_BY, object: [issuer, ISS-0001],
+   value_text: explicit,
+   quote: "Corvana Development Bank benefits from an explicit guarantee and should be treated as sovereign risk."}
+
+# --- research/2025-11-18_bank-b_valdoria-spillovers.md (external) ---
+- {file: research/2025-11-18_bank-b_valdoria-spillovers.md, subject: [issuer, ISS-0009], predicate: TRADES_AS_PROXY_FOR, object: [issuer, ISS-0001],
+   holds: false, value_text: proxy trade overstated; bilateral trade under 4% of Valdoria GDP,
+   quote: "Investors often trade Valdoria as a proxy for Corvana. We think this is overstated"}
+- {file: research/2025-11-18_bank-b_valdoria-spillovers.md, subject: [issuer, ISS-0009], predicate: CORRELATED_WITH, object: [issuer, ISS-0001],
+   value_num: 0.7, value_text: 5Y CDS correlation in risk-off episodes,
+   quote: "in risk-off episodes the correlation of 5Y CDS has been around 0.7"}
+
+# --- research/2026-03-05_em-credit-internal_cpl-ipo.md (credit_internal) ---
+- {file: research/2026-03-05_em-credit-internal_cpl-ipo.md, subject: [issuer, ISS-0001], predicate: OWNS, object: [issuer, ISS-0003],
+   value_num: 34, as_of: 2026-02-24, value_text: after partial IPO; golden share over tariff decisions retained,
+   quote: "The government sold down its stake from 51% to 34%"}
+- {file: research/2026-03-05_em-credit-internal_cpl-ipo.md, subject: [unresolved, a strategic investor], predicate: OWNS, object: [issuer, ISS-0003],
+   value_num: 25, as_of: 2026-02-24, quote: "a strategic investor now holds 25%"}
+- {file: research/2026-03-05_em-credit-internal_cpl-ipo.md, subject: [issuer, ISS-0003], predicate: BETA_TO, object: [issuer, ISS-0001],
+   value_num: 0.6, value_text: was ~0.9 before the IPO,
+   quote: "We now expect CPL to trade with a beta of roughly 0.6 to the sovereign rather than ~0.9 previously."}
+
+# --- research/2026-06-10_bank-a_cnoc-update.md (external) ---
+- {file: research/2026-06-10_bank-a_cnoc-update.md, subject: [issuer, ISS-0001], predicate: OWNS, object: [issuer, ISS-0002],
+   value_num: 100, quote: "The company remains 100% owned by the Ministry of Finance."}
+- {file: research/2026-06-10_bank-a_cnoc-update.md, subject: [issuer, ISS-0007], predicate: FINANCING_VEHICLE_OF, object: [issuer, ISS-0002],
+   quote: "CNOC Finance B.V. remains the issuing entity for all USD debt"}
+- {file: research/2026-06-10_bank-a_cnoc-update.md, subject: [issuer, ISS-0007], predicate: GUARANTEED_BY, object: [issuer, ISS-0002],
+   value_text: "unconditional, all USD debt", quote: "with an unconditional guarantee from the parent"}
+
+# --- research/2026-07-01_bank-a_uk-retail.md (external): no relationship statements (a recommendation only) ---
+
+# --- research/2026-08-21_macro-internal_cvd-reserves.md (macro_internal): no relationship statements (views only) ---
+
+# --- research/2026-09-22_bank-b_corvana-negative-watch.md (external) ---
+- {file: research/2026-09-22_bank-b_corvana-negative-watch.md, subject: [issuer, ISS-0002], predicate: RATING_CAPPED_BY, object: [issuer, ISS-0001],
+   quote: "Corvana Oil (CNOC) - rating capped at the sovereign"}
+- {file: research/2026-09-22_bank-b_corvana-negative-watch.md, subject: [issuer, ISS-0007], predicate: GUARANTEED_BY, object: [issuer, ISS-0002],
+   value_text: full parent guarantee, quote: "USD bonds issued via its Dutch finance subsidiary carry a full parent guarantee"}
+- {file: research/2026-09-22_bank-b_corvana-negative-watch.md, subject: [issuer, ISS-0004], predicate: GUARANTEED_BY, object: [issuer, ISS-0001],
+   value_text: explicit, quote: "CDB - explicitly guaranteed, will move with the sovereign."}
+
+# --- desk_notes/em-credit-desk-notes.md (credit_internal by assumption; doc_time picks the chat line) ---
+- {file: desk_notes/em-credit-desk-notes.md, doc_time: "2026-02-11 09:14", subject: [issuer, ISS-0005], predicate: TRADES_AS_PROXY_FOR, object: [issuer, ISS-0001],
+   value_text: moves with CORVAN spreads whatever the ownership says,
+   quote: "CorTel trades as a sovereign proxy whatever the ownership says"}
+- {file: desk_notes/em-credit-desk-notes.md, doc_time: "2026-02-11 09:14", subject: [issuer, ISS-0001], predicate: OWNS, object: [issuer, ISS-0005],
+   value_num: 20, value_text: since the 2025 placement,
+   quote: "govt stake is only 20% now since the 2025 placement"}
+- {file: desk_notes/em-credit-desk-notes.md, doc_time: "2026-04-30 16:02", subject: [issuer, ISS-0008], predicate: COUNTRY_OF_RISK, object: [country, QC],
+   value_text: UK incorporated but every mine is in Corvana; risk system still has GB,
+   quote: "Country of risk = Corvana for anything we do."}
+- {file: desk_notes/em-credit-desk-notes.md, doc_time: "2026-09-19 08:40", subject: [issuer, ISS-0004], predicate: GUARANTEED_BY, object: [issuer, ISS-0001],
+   value_text: treat like sovereign, quote: "CDB 27s are guaranteed so treat like sovereign"}

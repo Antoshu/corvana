@@ -1,0 +1,15 @@
+predicate,single_valued,compare,direction,description
+ISSUED_BY,true,object,forward,instrument -> issuer
+REFERENCES_CREDIT,true,object,forward,CDS -> reference entity
+GUARANTEED_BY,false,holds,forward,instrument or issuer -> guarantor
+FINANCING_VEHICLE_OF,true,object,forward,issuer -> parent it issues for
+OWNS,false,value_num,backward,owner -> owned; value_num = stake percent 0-100
+COUNTRY_OF_RISK,true,object,forward,issuer -> country where the economic risk sits
+RATING_CAPPED_BY,false,holds,forward,issuer -> issuer whose rating caps it
+TRADES_AS_PROXY_FOR,false,holds,forward,issuer -> issuer; holds=false records a denial
+BETA_TO,false,value_num,forward,issuer -> issuer; spread beta
+CORRELATED_WITH,false,value_num,forward,issuer -> issuer; correlation
+DENOMINATED_IN,true,object,forward,instrument or curve -> currency (level-1 column)
+PRICED_OFF,true,object,forward,instrument -> curve (level-1 column)
+CURRENCY_OF,false,object,forward,currency -> country (curated)
+SOVEREIGN_IS,true,object,forward,country -> its sovereign issuer (curated)

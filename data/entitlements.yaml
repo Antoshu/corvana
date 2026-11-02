@@ -1,0 +1,14 @@
+# Who can see what. Books and research visibility labels.
+users:
+  alice:
+    role: Portfolio Manager, EM Macro
+    books: [EM_MACRO]
+    research_visibility: [external, macro_internal]
+  bob:
+    role: Portfolio Manager, EM Credit
+    books: [EM_CREDIT]
+    research_visibility: [external, credit_internal]
+  carol:
+    role: Head of Risk
+    books: [EM_MACRO, EM_CREDIT]
+    research_visibility: [external, macro_internal, credit_internal]

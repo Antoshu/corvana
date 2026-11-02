@@ -1,0 +1,37 @@
+# Source systems behind the data pack. Reliability is the data owner's own view.
+sources:
+  SecMaster:
+    description: Security master - issuers and instruments
+    owner: Reference Data team
+    reliability: high
+    files: [reference/issuers.csv, reference/instruments.csv]
+  OMS:
+    description: Order management system - end-of-day positions
+    owner: Trading Technology
+    reliability: high
+    files: [positions/]
+  RatingsFeed:
+    description: Vendor credit ratings feed
+    owner: Reference Data team
+    reliability: high
+    files: [reference/ratings.csv]
+  MarketData:
+    description: Curve definitions
+    owner: Market Data team
+    reliability: high
+    files: [reference/curves.csv]
+  OwnershipTracker:
+    description: Manually maintained spreadsheet of state ownership stakes
+    owner: EM Credit desk (informal)
+    reliability: medium - updated ad hoc
+    files: [reference/ownership.csv]
+  ResearchHub:
+    description: Research repository - external broker research and internal notes
+    owner: Research Operations
+    reliability: varies by author; documents are point-in-time opinions
+    files: [research/]
+  DeskNotes:
+    description: Informal desk notes and chat excerpts
+    owner: Individual desks
+    reliability: low-medium - expert opinion, unverified
+    files: [desk_notes/]

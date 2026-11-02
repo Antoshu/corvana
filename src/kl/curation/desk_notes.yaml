@@ -1,0 +1,5 @@
+# Desk-note files carry no visibility label. Assumption: a desk's running notes are that desk's internal material.
+# Change the label here and reload to test the alternative (null hides the file from everyone).
+- file: desk_notes/em-credit-desk-notes.md
+  publisher: EM Credit desk
+  visibility: credit_internal

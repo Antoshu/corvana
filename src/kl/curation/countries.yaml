@@ -1,0 +1,7 @@
+# Countries the pack refers to. QC and QV are fictional. currency and sovereign come from curves.csv and issuers.csv
+# where the pack has them; GBP and EUR are real-world codes added here. These rows are the only curated level-1 data.
+- {code: QC, name: Corvana,        currency: CVD, sovereign_issuer_id: ISS-0001, aliases: [Corvana]}
+- {code: QV, name: Valdoria,       currency: null, sovereign_issuer_id: ISS-0009, aliases: [Valdoria]}
+- {code: GB, name: United Kingdom, currency: GBP, sovereign_issuer_id: null, aliases: [UK, United Kingdom]}
+- {code: NL, name: Netherlands,    currency: EUR, sovereign_issuer_id: null, aliases: [Netherlands, Dutch]}
+- {code: US, name: United States,  currency: USD, sovereign_issuer_id: null, aliases: [US, United States]}

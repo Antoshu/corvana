@@ -1,0 +1,366 @@
+// Corvana knowledge layer, lean model. Derived from model/ground_truth.md; column-by-column reasons in
+// model/table_review.md. Three levels: source tables as delivered (minus columns nothing reads, plus aliases[] and resolved ids), links with
+// provenance, documents annotated with what they are about. Every table carries a source and updated_on for audit. Relationships are declared inline.
+//
+// Date columns, three kinds, never mixed:
+//   updated_on    on every table: when this layer wrote the row (load or delta). Audit only; never used to reason.
+//   the data's own time, keeping the file's column name: issuers.last_updated (SecMaster's date), ownership.as_of_date,
+//                 positions.as_of_date, ratings.action_date, documents.published_at.
+//   statements.as_of   when the link was true, as stated by its source (not when published). Point-in-time queries use it.
+//   A point-in-time query reads "as known at": a row counts for an as-of date only if it was true by then (business
+//   date <= as_of) AND had arrived by then (updated_on <= as_of). A back-dated delivery never changes a past answer.
+
+Project corvana_kl {
+  database_type: 'PostgreSQL'
+  Note: '''
+  Levels: 1 source tables (as delivered, plus curated aliases[] and ids resolved at load) · 2 predicate_def, statements ·
+  3 documents (with its about_* annotation columns). Precedence, quality and path finding are views over these tables, not columns.
+  Row-level security: positions by book, documents and statements by visibility label.
+  '''
+}
+
+// ------------------------------------------------------------------------------------------------------------
+// Level 1 · source tables
+// ------------------------------------------------------------------------------------------------------------
+
+Table sources {
+  source_id   text [pk, note: 'SecMaster, OMS, RatingsFeed, MarketData, OwnershipTracker, ResearchHub, DeskNotes, Curated']
+  description text
+  reliability text [note: 'the words of the data owner; source_tier maps high→3, medium→2, else→1']
+  source_file text [not null]
+  updated_on  date [not null]
+  Note: 'sources.yaml. Tier drives precedence between statements on the same link.'
+}
+
+Table entitlements {
+  username            text   [pk]
+  books               text[] [not null]
+  research_visibility text[] [not null, note: 'labels: external, macro_internal, credit_internal']
+  source_file         text   [not null]
+  updated_on          date   [not null]
+  Note: 'entitlements.yaml. The loader creates one role per user, book_<book> and vis_<label> group roles from it.'
+}
+
+Table country {
+  code                char(2) [pk]
+  name                text    [not null]
+  aliases             text[]  [not null, default: '{}', note: 'curated other names ("Corvanan")']
+  currency            char(3) [note: 'CURRENCY_OF hop: currency → country']
+  sovereign_issuer_id text    [unique, ref: - issuers.issuer_id, note: 'SOVEREIGN_IS hop: country → sovereign']
+  updated_on          date    [not null]
+  Note: 'Curated (curation/countries.yaml). QC → CVD → ISS-0001 is the end of every currency and curve channel.'
+}
+
+Table rating_scale {
+  agency     text     [not null]
+  rating     text     [not null]
+  rank       smallint [not null, note: '1 = AAA … 22 = D']
+  updated_on date     [not null]
+  indexes {
+    (agency, rating) [pk]
+    (agency, rank)   [unique]
+  }
+  Note: 'Curated. Only for rank comparison (RATING_LAG, "one notch above").'
+}
+
+Table issuers {
+  issuer_id                text    [pk]
+  legal_name               text    [not null, unique]
+  short_name               text    [note: 'second file-supplied alias']
+  aliases                  text[]  [not null, default: '{}', note: 'curated other names seen in the pack ("Rep. of Corvana", "Corvana Ministry of Finance"); GIN index']
+  country_of_incorporation char(2) [not null, ref: > country.code, note: 'COUNTRY_OF_RISK rule input']
+  last_updated             date    [note: 'as_of of rows inferred from this row']
+  source_system            text    [not null, ref: > sources.source_id]
+  source_file              text    [not null]
+  updated_on               date    [not null]
+  Note: 'issuers.csv minus lei, issuer_type, sector (on no path, in no citation), plus the curated aliases column. The names in the row (legal_name, short_name, aliases) are what the alias view resolves against.'
+}
+
+Table curves {
+  curve_id      text    [pk]
+  description   text
+  aliases       text[]  [not null, default: '{}', note: 'curated other names ("CVD govt curve")']
+  currency      char(3) [not null, note: 'DENOMINATED_IN hop: curve → currency']
+  source_system text    [not null, ref: > sources.source_id]
+  source_file   text    [not null]
+  updated_on    date    [not null]
+  Note: 'curves.csv minus country (duplicates the currency → country hop).'
+}
+
+Table instruments {
+  instrument_id    text     [pk]
+  isin             char(12) [unique, note: 'position resolution when ref_type = ISIN']
+  ticker           text     [not null, unique, note: 'position resolution when ref_type = TICKER']
+  description      text     [not null]
+  aliases          text[]   [not null, default: '{}', note: 'curated other names ("CDB 27s", "3M NDFs"); GIN index']
+  instrument_type  text     [not null, note: 'CDS → REFERENCES_CREDIT instead of ISSUED_BY']
+  issuer_name      text     [note: 'as written by SecMaster; the evidence for issuer_id and the quote on the ISSUED_BY edge']
+  issuer_id        text     [ref: > issuers.issuer_id, note: 'resolved at load through the alias view; null = UNRESOLVED_NAME flag. ISSUED_BY edge (REFERENCES_CREDIT for a CDS)']
+  guarantor_name   text     [note: 'as written; the evidence for guarantor_id']
+  guarantor_id     text     [ref: > issuers.issuer_id, note: 'resolved at load; GUARANTEED_BY edge']
+  currency         char(3)  [not null, note: 'DENOMINATED_IN hop']
+  underlying_curve text     [ref: > curves.curve_id, note: 'PRICED_OFF hop']
+  source_system    text     [not null, ref: > sources.source_id]
+  source_file      text     [not null]
+  updated_on       date     [not null]
+  Note: 'instruments.csv minus coupon, maturity, plus the resolved issuer_id and guarantor_id. Issuer, guarantor, currency and curve are not copied into statements; the edges view projects them.'
+}
+
+Table ownership {
+  ownership_id serial       [pk]
+  owner        text         [not null, note: 'as written by the tracker; evidence for owner_id']
+  owner_id     text         [ref: > issuers.issuer_id, note: 'resolved at load through the alias view']
+  owned_entity text         [not null, note: 'as written; evidence for owned_id']
+  owned_id     text         [ref: > issuers.issuer_id, note: 'resolved at load. owner_id → owned_id is the OWNS edge, tier 2, dated as_of_date']
+  stake_pct    numeric(5,2) [not null, note: '0–100']
+  as_of_date   date         [not null, note: 'the date the stake was true; the PIT question turns on it']
+  source       text         [note: 'the citation given by the tracker (annual report, charter, prospectus)']
+  notes        text         [note: 'two rules read it: "sovereign guarantee" → GUARANTEED_BY, "Financing vehicle" → FINANCING_VEHICLE_OF']
+  source_file  text         [not null]
+  updated_on   date         [not null]
+  indexes {
+    (owner, owned_entity, as_of_date) [unique]
+  }
+  Note: 'ownership.csv, the tracker spreadsheet, plus resolved ids. Tier 2. Its rows are OWNS edges projected by the edges view (status REFERENCE); the two phrases in notes become INFERRED statements.'
+}
+
+Table ratings {
+  entity      text [not null, note: 'as written by the feed; evidence for issuer_id']
+  issuer_id   text [ref: > issuers.issuer_id, note: 'resolved at load through the alias view']
+  agency      text [not null]
+  rating      text [not null]
+  outlook     text [not null]
+  action_date date [not null]
+  source      text [not null, ref: > sources.source_id]
+  source_file text [not null]
+  updated_on  date [not null]
+  indexes {
+    (entity, agency, action_date) [pk]
+  }
+  Note: 'ratings.csv, an event log, plus the resolved issuer_id. (agency, rating) must exist in rating_scale. Not copied into statements.'
+}
+Ref: ratings.(agency, rating) > rating_scale.(agency, rating)
+
+Table positions {
+  book           text          [not null, note: 'RLS: role book_<book>']
+  instrument_ref text          [not null]
+  ref_type       ref_type      [not null]
+  quantity       numeric(18,2) [not null, note: 'sign convention undocumented; reported as-is']
+  notional_ccy   char(3)       [not null]
+  as_of_date     date          [not null]
+  source_file    text          [not null]
+  updated_on     date          [not null]
+  indexes {
+    (book, instrument_ref, as_of_date) [pk]
+  }
+  Note: 'positions_<date>.csv. Resolved to instruments by ref_type in the position_resolved view; an unresolved ref is reported, never guessed.'
+}
+
+Enum ref_type {
+  ISIN
+  INTERNAL
+  TICKER
+}
+
+// ------------------------------------------------------------------------------------------------------------
+// Level 3 · documents (one table; declared before statements, which point at them)
+// ------------------------------------------------------------------------------------------------------------
+
+Table documents {
+  document_id       serial    [pk]
+  source_system     text      [not null, ref: > sources.source_id, note: 'ResearchHub | DeskNotes: keeps the two datasets distinguishable inside one table']
+  source_file       text      [not null]
+  kind              doc_kind  [not null]
+  title             text
+  publisher         text
+  author            text      [note: 'desk notes: the chat handle']
+  published_at      timestamp [not null, note: 'desk notes: the bracketed time of the line']
+  visibility        text      [note: 'external | macro_internal | credit_internal; null = hidden from everyone. RLS: role vis_<label>']
+  text              text      [not null, note: 'the source of every quote and the only thing cited']
+  about_issuers     text[]    [not null, default: '{}', note: 'issuer ids the document is about; GIN index']
+  about_instruments text[]    [not null, default: '{}', note: 'instrument ids']
+  about_curves      text[]    [not null, default: '{}', note: 'curve ids']
+  about_currencies  text[]    [not null, default: '{}', note: 'currency codes']
+  topics            text[]    [not null, default: '{}', note: 'downgrade, guarantee, ownership, FX, ...']
+  summary           text      [note: 'one line, LLM-written; a pointer to the document, never a citation']
+  annotated_by      annotator [not null, note: 'which annotator wrote the about_* columns']
+  updated_on        date      [not null]
+  indexes {
+    (source_file, published_at, `coalesce(author, '')`) [unique, name: 'documents_unique', note: 'author is nullable and NULLs are distinct in a plain unique index; the expression makes a re-sent document without an author a no-op']
+    about_issuers     [note: 'gin']
+    about_instruments [note: 'gin']
+  }
+  Note: '''
+  Level 3 is this one table. One row per research note; one row per desk-chat line.
+  Two annotators fill the same about_* columns: the alias scan at load (RULE: deterministic, no key needed) and,
+  where available, the LLM annotator (LLM: every id it names must resolve through the alias view, else it is dropped and
+  reported; it also writes summary and topics). "Research about X" is `where X = any(about_<type>)`.
+  Relationships found in the text are not stored here: they are PROPOSED rows in statements with document_id set.
+  '''
+}
+
+Enum doc_kind {
+  RESEARCH
+  DESK_NOTE
+}
+
+Enum annotator {
+  RULE [note: 'alias scan of the text']
+  LLM  [note: 'model annotation, validated against alias']
+}
+
+// ------------------------------------------------------------------------------------------------------------
+// Level 2 · predicates, statements
+// ------------------------------------------------------------------------------------------------------------
+
+Table predicate_def {
+  predicate     text      [pk]
+  single_valued boolean   [not null, note: 'true: two different objects on the same subject disagree']
+  compare       compare   [not null, note: 'what two rows on the same link are compared on']
+  direction     direction [not null, note: 'how a path walks it; OWNS is walked owned → owner']
+  description   text      [not null]
+  Note: '''
+  The model as code. Fourteen rows:
+  ISSUED_BY, REFERENCES_CREDIT, GUARANTEED_BY, FINANCING_VEHICLE_OF, OWNS, COUNTRY_OF_RISK, RATING_CAPPED_BY,
+  TRADES_AS_PROXY_FOR, BETA_TO, CORRELATED_WITH (statements);
+  DENOMINATED_IN, PRICED_OFF, CURRENCY_OF, SOVEREIGN_IS (level-1 columns projected by the edges view).
+  '''
+}
+
+Enum compare {
+  object
+  value_num
+  holds
+}
+
+Enum direction {
+  forward
+  backward
+}
+
+Table statements {
+  statement_id  serial        [pk, note: 'the citation id']
+  subject_type  text          [not null, note: 'issuer | instrument | unresolved']
+  subject_id    text          [not null]
+  predicate     text          [not null, ref: > predicate_def.predicate]
+  object_type   text          [not null, note: 'issuer | country | currency | curve']
+  object_id     text          [not null]
+  value_num     numeric(12,4) [note: 'stake %, beta, correlation']
+  value_text    text          [note: 'qualifier, e.g. "indirect via holding"']
+  holds         boolean       [not null, default: true, note: 'false records a denial; never walked']
+  as_of         date          [not null, note: 'when the link was true, not when it was published']
+  source_system text          [not null, ref: > sources.source_id, note: 'tier for precedence']
+  source_file   text          [not null, note: 'the file or document the row came from']
+  document_id   int           [ref: > documents.document_id, note: 'null for rows from datasets and rules']
+  quote         text          [note: 'verbatim sentence from documents.text, or the rule that produced the row']
+  method        method        [not null]
+  status        status        [not null]
+  visibility    text          [note: 'copied from the document so the RLS policy needs no join; null = everyone']
+  updated_on    date          [not null]
+  indexes {
+    (subject_type, subject_id, predicate, object_id, as_of, source_file, `coalesce(quote, '')`) [unique, name: 'statements_unique']
+    (subject_type, subject_id, predicate) [name: 'statements_subject']
+    (object_type, object_id, predicate)   [name: 'statements_object']
+  }
+  Note: '''
+  A link that no file column holds: produced by a rule or read from a document. One row per link per source.
+  Nothing is overwritten: a newer value is a new row. Links a file column does hold (issuer_id, guarantor_id,
+  owner_id → owned_id, currency, curve, country → sovereign) are not copied here; the edges view projects them.
+  INFERRED: a rule over tier-3/tier-2 data (country of incorporation, the vehicle rule, ownership.notes). Ranks with REFERENCE.
+  PROPOSED: from a document (hand-curated or LLM-extracted). Never current when a reference-grade row exists on the link; it flags (STALE, CONFLICT) and is returned beside the winner.
+  CONFIRMED / REJECTED: the decision of a person on a PROPOSED row.
+  '''
+}
+
+Enum method {
+  RULE   [note: 'derived by a loader rule; quote holds the rule']
+  MANUAL [note: 'hand-curated from a document']
+  LLM    [note: 'extracted by the model, auto-checked: quote verbatim, entities resolve']
+}
+
+Enum status {
+  REFERENCE [note: 'only on level-1 edges in the edges view, never stored in statements']
+  INFERRED
+  PROPOSED
+  CONFIRMED
+  REJECTED
+}
+
+// ------------------------------------------------------------------------------------------------------------
+// Groups · data and metadata are kept apart
+// ------------------------------------------------------------------------------------------------------------
+
+// Configuration the layer runs on, not facts about the world: where data comes from and how much to trust it, who
+// may see what, and what each relationship type means. Read by the loader, the precedence rule and the RLS
+// policies; never cited in an answer.
+TableGroup metadata {
+  sources
+  entitlements
+  predicate_def
+}
+
+// Small curated seeds the pack refers to but never defines (country → currency → sovereign; rating → rank). Data,
+// but hand-maintained in curation/ rather than delivered.
+TableGroup reference_curated {
+  country
+  rating_scale
+}
+
+// One table per file in the pack, as delivered, minus columns nothing reads, plus curated aliases[] and ids
+// resolved at load. Never written to by another source.
+TableGroup level1_source_data {
+  issuers
+  curves
+  instruments
+  ownership
+  ratings
+  positions
+}
+
+// Links no file column holds: produced by a rule or read from a document, one row per link per source, with
+// provenance. The edges view unions them with the level-1 links into one graph.
+TableGroup level2_links {
+  statements
+}
+
+// Research notes and desk-chat lines with text, label and what they are about.
+TableGroup level3_documents {
+  documents
+}
+
+// ------------------------------------------------------------------------------------------------------------
+// Derived, not stored (views and functions in src/kl/db/020_logic.sql)
+// ------------------------------------------------------------------------------------------------------------
+// alias                       union of every name column: (entity_type, entity_id, alias) from issuers (legal_name,
+//                             short_name, aliases[]), instruments (ticker, isin, description, aliases[]), curves
+//                             (curve_id, aliases[]), country (name, aliases[]), plus currency codes. The one lookup
+//                             used by the loader, the extractor and the annotator. Uniqueness per type is checked by
+//                             validate.py (an array column cannot carry a unique index across its elements).
+// source_tier                 reliability → 3/2/1
+// known_by(as_of)             greatest(as_of, base load date): the arrival gate for every point-in-time read
+// positions_as_of(as_of)      each book at its own latest file date on or before as_of, arrived by known_by(as_of)
+// position_resolved           positions ⟕ instruments by ref_type
+// rating_current              latest ratings row per issuer_id and agency, with rating_scale.rank attached
+// edges                       the graph: statements ∪ level-1 edges projected to the statement shape with a synthetic
+//                             edge_id and the raw name as quote: instruments.issuer_id (ISSUED_BY, or REFERENCES_CREDIT
+//                             for a CDS), instruments.guarantor_id (GUARANTEED_BY), ownership owner_id → owned_id (OWNS,
+//                             value_num = stake_pct, as_of = as_of_date), instruments.currency and curves.currency
+//                             (DENOMINATED_IN), instruments.underlying_curve (PRICED_OFF), country.currency (CURRENCY_OF),
+//                             country.sovereign_issuer_id (SOVEREIGN_IS). A level-1 edge is REFERENCE when the raw name
+//                             equals the legal name and INFERRED when an alias resolved it.
+// current_statements(as_of)   over edges: per link, reference-grade first, higher tier, latest as_of; losers kept as
+//                             other_sources. The 51 of the tracker (edge) and the 34 of the IPO note (statement) compete here.
+// link_quality(as_of)         CORROBORATED · STALE · CONFLICT · SUPERSEDED between winner and losers
+// data_quality                link_quality ∪ UNRESOLVED_REF ∪ UNRESOLVED_NAME ∪ UNLABELLED_DOCUMENT ∪ UNKNOWN_LABEL ∪
+//                             UNKNOWN_BOOK ∪ RATING_LAG (per agency: subject issuer|GUARANTEED_BY|guarantor|agency)
+// hidden_newer_count(...)     security definer, search_path pinned; the asker is the session's SET ROLE value, never a
+//                             parameter; count of newer rows on a link that role cannot see
+// exposure_paths(target, as_of, max_depth, start_ids)   recursive walk from each instrument to the target over
+//                             current_statements. While no person has ruled on a link, every row on it is walkable
+//                             (research may show an unconfirmed channel, graded low). Once the link's winner is
+//                             CONFIRMED, only rows agreeing with it are walkable and the losers never make a hop; a
+//                             confirmed holds=false blocks the link. Citations on a hop are its walkable rows.
+// research_for_paths(entity_ids, as_of, limit)  visible documents about any of the ids, with about_on_path (the ids
+//                             matched), ordered by how many ids matched, then published_at desc; the ranking behind
+//                             get_exposure's research list. Extension fuzzystrmatch (shipped with Postgres) gives
+//                             the levenshtein() used for the UNRESOLVED_REF nearest-match hint.

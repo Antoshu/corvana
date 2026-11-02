@@ -1,0 +1,8 @@
+entity,agency,rating,outlook,action_date,source
+Republic of Corvana,Agency A,BB-,Stable,2024-04-10,RatingsFeed
+Republic of Corvana,Agency A,BB-,Negative,2026-09-18,RatingsFeed
+Corvana Development Bank,Agency A,BB-,Stable,2024-04-12,RatingsFeed
+Corvana National Oil Company,Agency A,BB-,Stable,2024-04-15,RatingsFeed
+Corvana Power & Light plc,Agency A,BB,Stable,2026-03-02,RatingsFeed
+Corvana Telecommunications SA,Agency A,BB,Stable,2025-06-20,RatingsFeed
+Republic of Valdoria,Agency A,B+,Stable,2025-10-01,RatingsFeed

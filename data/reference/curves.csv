@@ -1,0 +1,4 @@
+curve_id,description,currency,country,source_system
+CVD-GOVT,Corvana local-currency government bond curve,CVD,QC,MarketData
+CVD-OIS,Corvana overnight index swap curve,CVD,QC,MarketData
+USD-SOFR,USD SOFR curve,USD,US,MarketData
