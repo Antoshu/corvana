@@ -2,7 +2,7 @@
 
 Open work after the proof of concept, roughly in the order we expect to pick it up. The reasoning behind the design
 is in `narrative.md` and `ai_tooling_notes.md`. The second half lists the known issues found in testing, including an ingest
-stress test run on a copy of the database with thirteen synthetic deliveries (2026-11-02).
+stress test run on a copy of the database with the real delta plus twelve synthetic deliveries (2026-11-02).
 
 ## Next two weeks
 
@@ -46,11 +46,8 @@ stress test run on a copy of the database with thirteen synthetic deliveries (20
 Ticked items were fixed on 2026-11-02 and are pinned by `tests/test_regressions.py` and the stress suite; a code review
 the same day found and fixed eight more (paths ignoring a person's ruling, the hidden count's caller-supplied user,
 rating lag across agencies, a vehicle's country when it arrives with its ownership row, the summary cap ranking,
-the contradiction guard, the validator's position dates, filters for the ingest and the walk); a code review
-the same day found and fixed eight more (paths ignoring a person's ruling, the hidden count's caller-supplied user,
-rating lag across agencies, a vehicle's country when it arrives with its ownership row, the summary cap ranking,
-the contradiction guard, the validator's position dates, filters for the ingest and the walk)
-(`uv run pytest -m stress`, rebuilds a scratch database). `[~]` = partly addressed.
+the contradiction guard, the validator's position dates, filters for the ingest and the walk). The stress suite is
+`uv run pytest -m stress` and rebuilds a scratch database. `[~]` = partly addressed.
 
 Ranked by effect on the answer. All reproduced on a copy of the database (`corvana_kl_stress`) with synthetic
 delivery folders; the submitted database is untouched.
@@ -82,7 +79,9 @@ delivery folders; the submitted database is untouched.
 - [~] **Malformed files roll back atomically (good) but opaquely** (errors now name file and line; one bad file still blocks its batch): messages lack file and line, and one bad file blocks
   the good files in its batch.
 - [x] **Alias scan misses encoded and dotted names** ("Corvana &amp; Light", "C.N.O.C.").
-- [~] **Scale.** (summary now capped by `max_positions`; ingest throughput and latency at volume not addressed) 13.8k rows ingest in 57 s row by row; at 4,000 positions per book `get_exposure` takes 6 s and the
+- [~] **Scale.** (summary now capped by `max_positions`; ingest throughput and latency at volume not addressed) Measured
+  with the volume batch scaled up beyond the committed `VOLUME` in `tests/stress/make_batches.py`, which is kept small
+  so the suite runs in seconds: 13.8k rows ingest in 57 s row by row; at 4,000 positions per book `get_exposure` takes 6 s and the
   summary is 2.2M chars: summary size grows with positions and needs a cap or paging. Duplicate instrument
   descriptions (RegS/144A pairs) break alias uniqueness and are only caught by the validator after the ingest.
 - [ ] **Smaller items**: the summary payload is about 3.2k tokens (flag messages repeat per source); nested

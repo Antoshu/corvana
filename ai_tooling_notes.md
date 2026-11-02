@@ -41,7 +41,7 @@ summarised below.
    committed generated file matches a fresh generation.
 
 Two more passes came from the tools themselves, both after the proof of concept was "done": an ingest stress test
-(thirteen synthetic deliveries on a copy of the database) found six defects that changed answers, the worst being
+(the real delta plus twelve synthetic deliveries on a copy of the database) found six defects that changed answers, the worst being
 that a back-dated delivery changed a past answer and that a partial positions file hid a whole book; and a
 separate code-review session found eight more, the worst being that the path walk ignored a person's confirmation
 and that the hidden-count function trusted a caller-supplied user name. All were fixed with regression tests. One
@@ -68,6 +68,8 @@ The opening of the rework brief sent to the implementation session (the rest lis
 > tests/expected/*.md. Those files are the truth; where the current code disagrees with them, the code changes.
 > Do not edit anything under model/, tests/expected/, narrative.md, decisions.md or CLAUDE.md; report
 > discrepancies to me instead. [...] If your counts differ, report, do not force.
+
+(`decisions.md` was the design session's dated log; it was folded into this note and `narrative.md` and then deleted.)
 
 An excerpt of the implementation session reporting rather than fixing, which is the behaviour the briefs asked for:
 

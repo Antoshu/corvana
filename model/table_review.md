@@ -118,7 +118,7 @@ country name are aliases by being there). Resolution still has one entry point: 
 name column and array element into `(entity_type, entity_id, alias)`. The loader, extractor and annotator query the
 view exactly as they queried the table.
 
-This is a recorded compromise (see `narrative.md`, build log). Against it: a level-1 table now carries a column
+This is a recorded compromise. Against it: a level-1 table now carries a column
 written from the curation source, not from the file; an array column cannot hold a unique index across its
 elements, so "one name resolves to one entity" moves into `validate.py`; matching inside arrays is a scan per row,
 which is free at ten issuers and slow at a million, and limits what SQL can do with a name (no foreign key from a
@@ -153,8 +153,8 @@ HAS_VIEW goes (see statements). Fourteen predicates remain.
 | updated_on | keep | audit |
 
 **HAS_VIEW rows go (20 of 73).** They are opinions, not links; they never move a path. The "what does research
-say" half of the question is answered by returning the visible documents that mention an entity on the path
-(`document_mentions`) and letting the agent quote the text. Keeping a parallel table of hand-copied opinions
+say" half of the question is answered by returning the visible documents that are about an entity on the path
+(the `about_*` columns below) and letting the agent quote the text. Keeping a parallel table of hand-copied opinions
 doubles the curation and adds a second place a quote can be wrong. The statement table then holds exactly what the
 name says: a relationship between two things, from a source, at a date.
 
@@ -236,7 +236,7 @@ extension (shipped with Postgres) for the edit-distance hint on unresolved posit
 | edges | keep, widened | statements ∪ every level-1 link (issuer, guarantor, owner → owned, currency, curve, country → sovereign) with the raw name as quote and REFERENCE or INFERRED by whether an alias did the work; the graph |
 | current_statements(as_of) | keep, over edges | precedence per date across statements and level-1 edges, so the tracker's 51 and the IPO note's 34 still compete on one link |
 | link_quality(as_of) | keep | CORROBORATED / STALE / CONFLICT / SUPERSEDED |
-| data_quality | keep | plus UNRESOLVED_REF, UNRESOLVED_NAME (a level-1 name column that resolved to no id), UNLABELLED_DOCUMENT, RATING_LAG |
+| data_quality | keep | plus UNRESOLVED_REF, UNRESOLVED_NAME (a level-1 name column that resolved to no id), UNLABELLED_DOCUMENT, UNKNOWN_LABEL, UNKNOWN_BOOK, RATING_LAG |
 | hidden_newer_count | keep | the "newer information exists" count for alice |
 | exposure_paths | keep | the path finder |
 | issuer_current | drop | a convenience for humans, read by nothing; it is the flat-column design the model moved away from |
@@ -252,6 +252,4 @@ extension (shipped with Postgres) for the edit-distance hint on unresolved posit
 | columns dropped from kept tables | | 12 |
 | columns added | | aliases[] on four tables; issuer_id and guarantor_id on instruments; owner_id and owned_id on ownership; issuer_id on ratings; seven annotation columns on documents |
 
-Files that change: `schema.sql`, `schema.dbml` (replaced by `model/schema.dbml`), `load.py`, `tools.py`,
-`demo.py`, `agent.py`, `extract.py` (annotation added), `ingest_update.py`, `validate.py`, `statements.yaml`, `aliases.yaml` (agency rows out; loaded into the entity tables' `aliases` column
-rows), `tests/*`, `tests/expected/alice_exposure.md`, `writeup.md` section 1.
+"Before" is the design this review replaced; "after" is the current `model/schema.dbml` and the code under `src/kl/`.

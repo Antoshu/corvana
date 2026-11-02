@@ -42,7 +42,6 @@ PG_HOST = os.environ.get("PGHOST", "localhost")
 PG_PORT = int(os.environ.get("PGPORT", "5432"))
 PG_ADMIN_USER = os.environ.get("KL_PG_ADMIN", "postgres")
 PG_DBNAME = os.environ.get("KL_PG_DB", "corvana_kl")
-PSQL_EXE = os.environ.get("KL_PSQL", r"C:\Program Files\PostgreSQL\18\bin\psql.exe")
 
 
 def admin_dsn(dbname: str | None = None) -> str:

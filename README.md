@@ -4,7 +4,7 @@ A small, working knowledge layer for one question, *"If the Republic of Corvana 
 exposed, how, and what does our research say about it?"*, and the typed tools an agent uses to answer it with every
 fact traced to its source and filtered by the asking user's entitlements.
 
-- `narrative.md` – the write-up (model, identities and conflicts, deterministic vs LLM, measurement, next steps) and the dated log of design decisions
+- `narrative.md` – the write-up (model, identities and conflicts, deterministic vs LLM, measurement, next steps)
 - `TODO.md` – open work after the proof of concept and the known issues found in testing
 - `model/` – the model: `schema.dbml` (the model as code, source of the generated DDL), `ground_truth.md` (what the answer needs, ingest rules, tool contract), `table_review.md` (every table and column with its verdict)
 - `src/kl/db/` – `010_tables.sql` (generated from the DBML by `kl-schema`, never edited), `020_logic.sql` (views,
@@ -28,7 +28,7 @@ uv run kl-schema                             # regenerate src/kl/db/010_tables.s
 uv run kl-load                               # drop/create database corvana_kl, roles, load the pack, print counts (no LLM)
 uv run kl-validate                           # consistency checks; exit 0 when clean
 uv run pytest -q                             # expected answers against the database
-uv run pytest -q -m stress                   # ingest stress test: builds a scratch database, 13 synthetic deliveries (~20 s)
+uv run pytest -q -m stress                   # ingest stress test: builds a scratch database, the real delta plus 12 synthetic deliveries (~20 s)
 
 uv run kl-demo --user bob                    # optional: scripted tool calls, no LLM (offline fallback)
 
@@ -57,7 +57,7 @@ Environment overrides: `KL_PG_DB`, `KL_PG_ADMIN`, `PGHOST`, `PGPORT`, `KL_AS_OF`
 |---|---|
 | `config.py` | paths, DSN, `AS_OF`, model ids, `.env` loading |
 | `schema_gen.py` | `kl-schema`: `model/schema.dbml` → `db/010_tables.sql` (pydbml) |
-| `db/` | generated tables; hand-written logic (alias, source_tier, position_resolved, rating_current, edges, current_statements, link_quality, data_quality with the nearest-match hint, hidden_newer_count, research_for_paths, exposure_paths); row-level security |
+| `db/` | generated tables; hand-written logic (alias, source_tier, known_by, positions_as_of, position_resolved, rating_current, edges, current_statements, link_quality, data_quality with the nearest-match hint, hidden_newer_count, research_for_paths, exposure_paths); row-level security |
 | `curation/` | aliases, countries, predicate definitions, rating scale, desk-note label, hand-extracted statements |
 | `load.py`, `resolve.py` | pack → Postgres; name resolution through the `alias` view; alias-scan annotation of documents; rule statements |
 | `validate.py` | self-checks (schema matches DBML, alias uniqueness, unresolved names, quotes, labels, roles, annotation), non-zero exit on failure |

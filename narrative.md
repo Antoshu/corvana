@@ -1,9 +1,8 @@
 # Corvana knowledge layer – narrative
 
-This is the Part 4 write-up. Sections 1 to 5 answer the five questions in the brief. Section 6 is how I got
-there: the decisions I made along the way, where I disagreed with the AI tooling and why, written as a log so the
-reasoning can be followed. `README.md` has the run commands; `model/` has the ground truth, the table-by-table
-review and the schema; `ai_tooling_notes.md` is the note on how the AI tooling was used.
+This is the Part 4 write-up. Sections 1 to 5 answer the five questions in the brief. `README.md` has the run
+commands; `model/` has the ground truth, the table-by-table review and the schema; `ai_tooling_notes.md` is the
+note on how the AI tooling was used, including the decisions where I disagreed with it and why.
 
 The scenario: *"If the Republic of Corvana is downgraded, what in my book is exposed, how, and what does our
 research say about it?"* Everything below was derived from that one question, asked by alice and by bob.
@@ -17,48 +16,12 @@ data into the model, I interpreted the "model" as possibly just being a database
 in one DBML file. I like DBML because it can generate SQL natively, is quite expressive while staying easy for a
 human to read, and has visual support (https://dbdiagram.io/).
 
-Model content:
+I decided to model some of the entities present as properties (like countries) as they could be expected to have their 
+own properties in the context of the data. I also modelled some metadata such as `sources` to map reliability and 
+`entitlements` which serves to generate Postgres roles.
 
-1. **Source tables, as delivered.** I created one table per file, plus tables for entities (like country) that can be
-   expected to have their own properties in the context of the data. Tables: `issuers`, `instruments`, `curves`,
-   `ownership`, `ratings`, `positions`, plus `country` (code, currency, sovereign) and `rating_scale`. Columns not
-   relevant to the question, to my understanding, were dropped (sector, issuer type, LEI, coupon, maturity). To
-   these high-quality tables only two kinds of field were added: curated `aliases[]` on each entity table, and ids
-   resolved from free-text names (`instruments.issuer_id` from "Corvana Ministry of Finance", `ownership.owner_id`,
-   `ratings.issuer_id`). The raw name stays next to the id as evidence. Aliases are used throughout, either for id
-   resolution or in the ETL process that turns documents (research, notes) into structured data. Aliases are key for
-   entity resolution and should probably see human review during ingestion at some point.
-2. **Statements.** One row per link per source, for the links no file column holds: either a rule (every issuer's
-   country of risk from its incorporation; the CDB guarantee and the CNOC Finance vehicle read from the tracker's
-   notes) or a document (stakes, guarantees, proxies, betas, correlations, a disputed country of risk). Each row
-   carries subject, predicate, object, value, `as_of` (when it was true, not when it was published), source system,
-   document, verbatim quote, method, status and visibility. Fourteen predicates are declared in `predicate_def`
-   with how they compare and how a path walks them. Links a file column does hold (issuer, guarantor, owner,
-   currency, curve, country → sovereign) are not copied: the `edges` view projects them next to the statements so
-   path finding walks one graph.
-3. **Documents.** One table for research notes and desk-chat lines: text, visibility label, and what each document
-   is about as id arrays (`about_issuers`, `about_instruments`, ...), plus topics and a one-line summary. "Research
-   about CPL" is a single lookup. I considered one table for notes and one for research, to avoid mixing sources,
-   and merged them because the content is similar (unstructured opinion and information from individuals) and it
-   simplifies the database; `source_system` keeps the two distinguishable, so splitting later is a partition, not
-   a redesign.
-
-**Metadata:** `sources` (the owner's own reliability word, mapped to a tier of 3/2/1) and `entitlements` (the YAML,
-from which the Postgres roles are generated). In the DBML these sit in their own group so data and metadata are
-visibly apart.
-
-**Precedence and quality are views, never edits.** `current_statements(as_of)` ranks the rows on each link: a
-person's confirmation first, then a file value or a rule, then research; within a rank the more reliable source,
-then the newer date. The losers stay attached as other sources. `link_quality` names each disagreement:
-CORROBORATED, STALE, CONFLICT, SUPERSEDED. `data_quality` adds unresolved position refs (with a nearest-match hint
-that is never applied), unresolved names and RATING_LAG. Nothing is ever overwritten, so a point-in-time answer is
-the same function with a different date.
-
-**Left out, deliberately.** Prices and sizing (the question asks for the channel, not the size). Opinions in the 
-notes are not transformed into any kind of structured data and are left as is to be quoted by the agent if need be.
-Also left out: First Corvana Bank's exposure (no position reaches the sovereign through it). The
-Ministry of Finance as a separate entity (an alias of the Republic). The unnamed CorTel holding company and the
-CPL strategic investor (kept as unresolved subjects). 
+I left out columns like prices and sizing which are not necessary (to my understanding of the PM question) to answer
+the question.
 
 **Why Postgres.** I picked Postgres because it is simple to implement for a proof of concept like this one while
 still having all the required features:
@@ -68,24 +31,6 @@ still having all the required features:
    interface is more versatile. Admins keep a bypass path (a superuser or a `BYPASSRLS` role sees everything).
 2. At this scale it is lightweight, easy to set up and easy to understand and debug.
 3. The data at this scale quite easily lends itself to a relational structure.
-
-When moving to production, it is very likely that Postgres will not scale well. A real knowledge graph like Neo4j
-will do much better because:
-
-1. Data onboarding will be easier, since we can attach the same class and properties to different tables (say
-   `issuers_internal` and `issuers_external`) without impacting traversal, whereas adding a new table to Postgres
-   means changing joins.
-2. Traversal over complex datasets will be much more understandable and efficient with Cypher queries, which deal
-   with concepts rather than concrete table and column names.
-3. Some of the data lends itself more to a quads format (for sourcing) than to a relational database, in my opinion,
-   as there are many disparate data points coming from the research that are difficult to represent relationally
-   without creating many more tables and columns.
-
-The statements table is already an edge list with provenance, which is the migration path to a graph store when the
-walk outgrows SQL (section 5). Two more choices worth stating: the table DDL is generated from the DBML and never
-written by hand (a test fails if the two drift), while views, functions and security are hand-written SQL; and all
-the logic stays in the database for now, because we are building with multiple vending methods in mind (agent, MCP,
-direct SQL) and that keeps one definition for all of them, at the cost of big CTE queries being harder to read.
 
 In an ideal world the database would have "time travel" so we could inspect the state at any past moment when something goes wrong.
 Right now the solution with Postgres might be to create tables of values in time (pk + date) but using a data platform that natively
@@ -143,7 +88,7 @@ against an expected set of facts to return
 
 **Test questions with expected answers, runnable.** Each question stands on its own; the expected answer was written
 by hand from the data before the code existed (`tests/expected/*.md`); the command runs the tests that assert it
-against the live database. The whole set is `uv run pytest -q` (88 tests). Any question can also be put to the agent
+against the live database. The whole set is `uv run pytest -q` (114 tests, plus 25 in the stress suite). Any question can also be put to the agent
 as written: `uv run kl-agent --user <user> --question "..."`.
 
 | # | question | expected answer | run |

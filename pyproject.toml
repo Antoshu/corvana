@@ -12,9 +12,6 @@ dependencies = [
     "pydbml>=1.2.1",
 ]
 
-[project.optional-dependencies]
-dev = ["pytest>=8.0"]
-
 [project.scripts]
 kl-schema = "kl.schema_gen:main"
 kl-load = "kl.load:main"

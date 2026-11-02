@@ -142,7 +142,7 @@ HAS_VIEW rows (recommendations, forecasts, assessments) are not links. The answe
 document, which the `documents` row (text, summary, topics, about_*) already gives; a separate opinion row
 duplicates the text.
 
-## 8. Documents (9 in the pack, 1 in the delta)
+## 8. Documents (9 files in the pack, 1 in the delta; 13 rows, one per research note or desk-chat line)
 
 | file | label | why the answer needs it |
 |---|---|---|
@@ -261,8 +261,8 @@ or statement id, source system and file, as-of, quote, status. The agent reads s
 |---|---|---|
 | find_entity(user, query) | matches by any name, exact first | small |
 | get_positions(user, as_of) | the user's positions, resolved or flagged | one row per position |
-| get_exposure(user, target, as_of, detail='summary', max_documents=10, max_positions=200) | per position: verdict (yes / unconfirmed / no), channels (key, label, grade, hop count, one edge id per hop: the precedence winner), flag kind + message; **unresolved holdings in their own block** (`unresolved`: position, flag message), so there is no "unknown" verdict in the positions list; selected research: id, title, date, label, summary, topics, path entities it is about | summary by default; `detail='full'` gives the hop-by-hop shape with text. Documents ranked in SQL (`research_for_paths`) by number of path entities matched, then recency, then id; capped in both modes. The agent gets summary only; MCP exposes both |
-| get_path(user, instrument_id, target, channel_key, as_of) | the representative path: hops with every citation, plus `paths_considered` | the drill-down for one channel |
+| get_exposure(user, target_id, as_of, detail='summary', max_documents=10, max_positions=200) | per position: verdict (yes / unconfirmed / no), channels (key, label, grade, hop count, one edge id per hop: the precedence winner), flag kind + message; **unresolved holdings in their own block** (`unresolved`: position, flag message), so there is no "unknown" verdict in the positions list; selected research: id, title, date, label, summary, topics, path entities it is about | summary by default; `detail='full'` gives the hop-by-hop shape with text. Documents ranked in SQL (`research_for_paths`) by number of path entities matched, then recency, then id; capped in both modes. The agent gets summary only; MCP exposes both |
+| get_path(user, instrument_id, target_id, channel_key, as_of) | the representative path: hops with every citation, plus `paths_considered` | the drill-down for one channel |
 | get_statements(user, entity_id, predicate, as_of) | current per link, other sources, flags, per-link hidden count | one entity |
 | get_documents(user, entity_id, since, as_of, text=False) | documents about the entity: id, title, date, label, summary, topics; text only on request | summaries by default |
 | get_document(user, document_id) | one document with its text | the citation fetch |
